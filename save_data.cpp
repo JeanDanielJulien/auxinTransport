@@ -30,7 +30,6 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
             fprintf(f," %i ",cells_vertices[j]);
         }
-        //    fprintf(f,"\n");
     }
     fprintf(f,"];\n");
     
@@ -40,9 +39,18 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
             fprintf(f,"%i %i ",period[2*j],period[2*j+1]);}}
     fprintf(f,"];\n");
     
+    // Useless for hexagonal tissues
+    /*fprintf(f,"cells_neighbours=[");
+    for (i=0;i<cell_number;i++){
+        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            fprintf(f," %i ",cells_neighbours[j]);
+        }
+    }
+    fprintf(f,"];\n");*/
+    
     fprintf(f,"width=%f;\nheight=%f;\n",width,height);
     
-    fprintf(f,"a=[");
+    fprintf(f,"auxin=[");
     for (i=0;i<cell_number;i++){fprintf(f,"%.6f ",auxin[i]);}
     fprintf(f," ];\n");
     
@@ -89,25 +97,6 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
     for (i=0;i<cell_number;i++){
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
             fprintf(f,"%.6f ",stress[j]);
-        }
-    }
-    fprintf(f," ];\n");
-    
-    
-    double total_stress[vertices_number_in_each_cell[cell_number]];
-    
-    for (i=0;i<cell_number;i++){
-        for (int j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            
-            total_stress[j] = stress[j] + stress[cells_neighbours[j]] ;
-            
-        }
-    }
-    
-    fprintf(f,"total_stress=[");
-    for (i=0;i<cell_number;i++){
-        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            fprintf(f,"%.6f ",total_stress[j]);
         }
     }
     fprintf(f," ];\n");
