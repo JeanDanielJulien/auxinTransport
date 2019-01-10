@@ -10,7 +10,7 @@
 
 /* this function computes the mechanical energy and its derivatives */
 
-double compute_energy_and_forces(unsigned n, const double *vertices, double *forces, void *parameters){
+double compute_energy_and_forces(unsigned n, const double *vertices, double *gradient, void *parameters){
     
     // define the parameters structure
     struct parameters_list {int vertices_number; int cell_number; int *vertices_number_in_each_cell; int *cells_vertices; double *areas; double *cell_areas;
@@ -28,7 +28,7 @@ double compute_energy_and_forces(unsigned n, const double *vertices, double *for
                        ((parameters_list*)parameters)->cell_number, ((parameters_list*)parameters)->areas, ((parameters_list*)parameters)->cell_areas);
     
     // check that forces are asked and compute them
-    if (forces){ for (int i=0;i<2*((parameters_list*)parameters)->vertices_number+2;i++){forces[i]=0.;}}
+    if (gradient){ for (int i=0;i<2*((parameters_list*)parameters)->vertices_number+2;i++){gradient[i]=0.;}}
     
     
     for (int i=0;i<((parameters_list*)parameters)->cell_number;i++){
@@ -51,32 +51,32 @@ double compute_energy_and_forces(unsigned n, const double *vertices, double *for
                 (((parameters_list*)parameters)->lengths)[j] ;
                 
                 /* derivatives of the lengths of the walls */
-                if (forces){
+                if (gradient){
                     
-                    forces[2*(((parameters_list*)parameters)->cells_vertices)[j]]+=cell_stiffness*wall_strain*
+                    gradient[2*(((parameters_list*)parameters)->cells_vertices)[j]]+=cell_stiffness*wall_strain*
                     length_derivative[0];
                     
                     
-                    forces[2*(((parameters_list*)parameters)->cells_vertices)[previous]]-=cell_stiffness*wall_strain*
+                    gradient[2*(((parameters_list*)parameters)->cells_vertices)[previous]]-=cell_stiffness*wall_strain*
                     length_derivative[0];
                     
                     
-                    forces[2*(((parameters_list*)parameters)->cells_vertices)[j]+1]+=cell_stiffness*wall_strain*
+                    gradient[2*(((parameters_list*)parameters)->cells_vertices)[j]+1]+=cell_stiffness*wall_strain*
                     length_derivative[1];
                     
                     
-                    forces[2*(((parameters_list*)parameters)->cells_vertices)[previous]+1]-=cell_stiffness*wall_strain*
+                    gradient[2*(((parameters_list*)parameters)->cells_vertices)[previous]+1]-=cell_stiffness*wall_strain*
                     length_derivative[1];
                     
                     
                     
                     
-                    forces[2*((parameters_list*)parameters)->vertices_number]+=(double)((((parameters_list*)parameters)->period)[2*j]-(((parameters_list*)parameters)->period)[2*previous])*
+                    gradient[2*((parameters_list*)parameters)->vertices_number]+=(double)((((parameters_list*)parameters)->period)[2*j]-(((parameters_list*)parameters)->period)[2*previous])*
                     cell_stiffness*wall_strain*
                     length_derivative[0];
                     
                     
-                    forces[2*((parameters_list*)parameters)->vertices_number+1]+=(double)((((parameters_list*)parameters)->period)[2*j+1]-(((parameters_list*)parameters)->period)[2*previous+1])*
+                    gradient[2*((parameters_list*)parameters)->vertices_number+1]+=(double)((((parameters_list*)parameters)->period)[2*j+1]-(((parameters_list*)parameters)->period)[2*previous+1])*
                     cell_stiffness*wall_strain*
                     length_derivative[1];
                 }
@@ -90,9 +90,9 @@ double compute_energy_and_forces(unsigned n, const double *vertices, double *for
     }
     
     // tension applied to the tissue
-    if (forces){
-        forces[2*(((parameters_list*)parameters)->vertices_number)]-=stress_x*init_height;
-        forces[2*(((parameters_list*)parameters)->vertices_number)+1]-=stress_y*init_width;
+    if (gradient){
+        gradient[2*(((parameters_list*)parameters)->vertices_number)]-=stress_x*init_height;
+        gradient[2*(((parameters_list*)parameters)->vertices_number)+1]-=stress_y*init_width;
     }
     
     energy-=stress_x*vertices[2*(((parameters_list*)parameters)->vertices_number)]*init_height

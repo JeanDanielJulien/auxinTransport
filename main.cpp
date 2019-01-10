@@ -33,13 +33,11 @@ int main(){
     
     // path to inital conditions
     char initial_file_name[256];
-    sprintf(initial_file_name,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/initialConditions/1600_noise0.8_1.txt");
-    //sprintf(initial_file_name,"/Path/to/initial/conditions/1600_noise0_1.txt");
+    sprintf(initial_file_name,"/Path/to/initial/conditions/1600_noise0.txt");
     
     // path to output files and basis of the output files names
     char file_name_basis[256];
-    sprintf(file_name_basis,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/output/name_of_the_simulation");
-    //sprintf(file_name_basis,"/Path/to/output/folder/name_of_the_simulation");
+    sprintf(file_name_basis,"/Path/to/output/folder/name_of_the_simulation");
     
     
     /*  allocate memory and initialize tissue topology */
