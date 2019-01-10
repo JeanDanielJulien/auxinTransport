@@ -27,7 +27,7 @@ int auxin_dynamics(double t, const double x[], double dx[], void *parameters){
         
         // check for ablated cell
         for (int j=((parameters_list2*)parameters)->vertices_number_in_each_cell[i];j<((parameters_list2*)parameters)->vertices_number_in_each_cell[i+1];j++){
-            activation[j] *= (1.-(double)(i==ablated_cell)) * (1.-(double)(((parameters_list2*)parameters)->cells_neighbours[j]==ablated_cell)) ;
+            activation[j] *= (double)(i!=ablated_cell) * (double)(((parameters_list2*)parameters)->cells_neighbours[j]!=ablated_cell) ;
         }
         // normalize for PIN1 competition between the different walls
         sum_activation=0.; sum_lengths=0.;
@@ -52,7 +52,7 @@ int auxin_dynamics(double t, const double x[], double dx[], void *parameters){
             
             exchange_ik=activation[j]*transport(x[i]);
             exchange_ik+=diffusion*x[i];
-            exchange_ik*=(1.-(double)(i==ablated_cell))*(1.-(double)(((parameters_list2*)parameters)->cells_neighbours[j]==ablated_cell));;
+            exchange_ik*=(double)(i!=ablated_cell)*(double)(((parameters_list2*)parameters)->cells_neighbours[j]!=ablated_cell);
             
             dx[i]-=(((parameters_list2*)parameters)->lengths)[j]*exchange_ik/(((parameters_list2*)parameters)->cell_areas)[i];
             dx[((parameters_list2*)parameters)->cells_neighbours[j]]+=(((parameters_list2*)parameters)->lengths)[j]*exchange_ik/(((parameters_list2*)parameters)->cell_areas)[((parameters_list2*)parameters)->cells_neighbours[j]];
