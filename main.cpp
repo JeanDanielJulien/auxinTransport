@@ -33,39 +33,36 @@ int main(){
     
     // path to inital conditions
     char initial_file_name[256];
-    //sprintf(initial_file_name,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/initialConditions/1600_noise0_1.txt");
-    sprintf(initial_file_name,"/Path/to/initial/conditions/1600_noise0_1.txt");
+    sprintf(initial_file_name,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/initialConditions/1600_noise0.8_1.txt");
+    //sprintf(initial_file_name,"/Path/to/initial/conditions/1600_noise0_1.txt");
     
     // path to output files and basis of the output files names
     char file_name_basis[256];
-    //sprintf(file_name_basis,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/output/name_of_the_simulation");
-    sprintf(file_name_basis,"/Path/to/output/folder/name_of_the_simulation");
-    
-    
+    sprintf(file_name_basis,"/Users/jjulien/Desktop/codes/auxinTransportStressStrain/output/name_of_the_simulation");
+    //sprintf(file_name_basis,"/Path/to/output/folder/name_of_the_simulation");
     
     
     /*  allocate memory and initialize tissue topology */
     
-    int cell_number, vertices_number, i, k;
+    int cell_number, vertices_number, cumulated_vertices_number, i, k;
     
     // read the number of cells and vertices to allocate memory
     std::ifstream file(initial_file_name,ios::in);
     file >> cell_number;
     file >> vertices_number;
+    file >> cumulated_vertices_number;
     file.close();
     
     double * vertices; vertices=(double*)calloc(2*vertices_number,sizeof(double));
     double * width; width=(double*)calloc(1,sizeof(double));
     double * height; height=(double*)calloc(1,sizeof(double));
     int * vertices_number_in_each_cell; vertices_number_in_each_cell=(int*)calloc(cell_number+1,sizeof(int));
-    vertices_number_in_each_cell[0]=0;
-    for (i=1;i<=cell_number;i++){vertices_number_in_each_cell[i]=vertices_number_in_each_cell[i-1]+6;}
-    int * cells_vertices; cells_vertices=(int*)calloc(vertices_number_in_each_cell[cell_number],sizeof(int));
-    int * period; period=(int*)calloc(2*vertices_number_in_each_cell[cell_number],sizeof(int));
-    int * cells_neighbours; cells_neighbours=(int*)calloc(vertices_number_in_each_cell[cell_number],sizeof(int));
+    int * cells_vertices; cells_vertices=(int*)calloc(cumulated_vertices_number,sizeof(int));
+    int * period; period=(int*)calloc(2*cumulated_vertices_number,sizeof(int));
+    int * cells_neighbours; cells_neighbours=(int*)calloc(cumulated_vertices_number,sizeof(int));
     
     // initialize tissue topology
-    load_initial_conditions(initial_file_name, cell_number, vertices_number, vertices, vertices_number_in_each_cell, cells_vertices, period, cells_neighbours, width, height);
+    load_initial_conditions(initial_file_name, cell_number, vertices_number, cumulated_vertices_number, vertices, vertices_number_in_each_cell, cells_vertices, period, cells_neighbours, width, height);
     
     printf("Initial condition loaded from %s\n",initial_file_name);
     

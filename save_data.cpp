@@ -5,6 +5,7 @@
 #include <math.h>
 #include "constants.h"
 #include "stiffness.h"
+#include "insertion_rate.h"
 
 /* this function saves all the variables for further analysis */
 
@@ -30,6 +31,7 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
             fprintf(f," %i ",cells_vertices[j]);
         }
+        //    fprintf(f,"\n");
     }
     fprintf(f,"];\n");
     
@@ -38,15 +40,6 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
             fprintf(f,"%i %i ",period[2*j],period[2*j+1]);}}
     fprintf(f,"];\n");
-    
-    // Useless for hexagonal tissues
-    /*fprintf(f,"cells_neighbours=[");
-    for (i=0;i<cell_number;i++){
-        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            fprintf(f," %i ",cells_neighbours[j]);
-        }
-    }
-    fprintf(f,"];\n");*/
     
     fprintf(f,"width=%f;\nheight=%f;\n",width,height);
     
@@ -72,9 +65,11 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
     fprintf(f," ];\n");
     
     double strain[vertices_number_in_each_cell[cell_number]];
+    double stress[vertices_number_in_each_cell[cell_number]];
     for (i=0;i<cell_number;i++){
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            strain[j]=(lengths[j]-target_lengths[j]);
+            strain[j]=(lengths[j]-target_lengths[j])/target_lengths[j];
+            stress[j]=strain[j]*stiffness(auxin[i])/stress_threshold;
         }
     }
     
@@ -86,17 +81,59 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
     }
     fprintf(f," ];\n");
     
-    double stress[vertices_number_in_each_cell[cell_number]];
-    for (i=0;i<cell_number;i++){
-        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            stress[j]=strain[j]*stiffness(auxin[i])/stress_threshold;
-        }
-    }
     
     fprintf(f,"stress=[");
     for (i=0;i<cell_number;i++){
         for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
             fprintf(f,"%.6f ",stress[j]);
+        }
+    }
+    fprintf(f," ];\n");
+    
+    double pin1_density[ vertices_number_in_each_cell[cell_number] ];
+    double sum_activation, sum_lengths;
+    for (i=0;i<cell_number;i++){
+        // compute the PIN1 insertion rate
+        for (int j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            pin1_density[j]=insertion_rate( feedback*strain[j] + (1.-feedback)*stress[j] );
+        
+            pin1_density[j] *= (double)(i!=ablated_cell) * (double)(cells_neighbours[j]!=ablated_cell) ;
+        }
+        // normalize for PIN1 competition between the different walls
+        sum_activation=0.; sum_lengths=0.;
+        for (int j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            sum_activation+=lengths[j]*pin1_density[j];
+            sum_lengths+=lengths[j];
+        }
+        for (int j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            pin1_density[j]/=1.+sum_activation/sum_lengths;
+            pin1_density[j]*=p_concentration;
+        }
+    }
+    
+    fprintf(f,"pin1_density=[");
+    for (i=0;i<cell_number;i++){
+        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            fprintf(f,"%.6f ",pin1_density[j]);
+        }
+    }
+    fprintf(f," ];\n");
+    
+    
+    double total_stress[vertices_number_in_each_cell[cell_number]];
+    
+    for (i=0;i<cell_number;i++){
+        for (int j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            
+            total_stress[j] = stress[j] + stress[cells_neighbours[j]] ;
+            
+        }
+    }
+    
+    fprintf(f,"total_stress=[");
+    for (i=0;i<cell_number;i++){
+        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
+            fprintf(f,"%.6f ",total_stress[j]);
         }
     }
     fprintf(f," ];\n");
