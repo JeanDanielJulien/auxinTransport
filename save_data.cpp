@@ -130,13 +130,6 @@ void save_data(FILE *f, int vertices_number, double *vertices, int *vertices_num
         }
     }
     
-    fprintf(f,"total_stress=[");
-    for (i=0;i<cell_number;i++){
-        for (j=vertices_number_in_each_cell[i];j<vertices_number_in_each_cell[i+1];j++){
-            fprintf(f,"%.6f ",total_stress[j]);
-        }
-    }
-    fprintf(f," ];\n");
     
     
     fprintf(f,"ablated_cell=%i;\n",ablated_cell);
